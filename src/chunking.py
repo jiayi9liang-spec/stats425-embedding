@@ -9,25 +9,44 @@ class Chunk:
     text: str
 
 
-def simple_char_chunk(text: str, chunk_size: int = 800, overlap: int = 120) -> List[Chunk]:
+def simple_char_chunk(text: str, min_chunk_size: int = 50, overlap: int = 0) -> List[Chunk]:
     """
-    Chunk text by characters with overlap.
+    Paragraph-based chunking using teammate's logic.
+    overlap is kept only for compatibility and is not used.
     """
     text = text.strip()
     if not text:
         return []
 
+    paragraphs = text.split("\n")
     chunks: List[Chunk] = []
-    start = 0
+    current_chunk = ""
     idx = 0
-    while start < len(text):
-        end = min(len(text), start + chunk_size)
-        chunk_txt = text[start:end].strip()
-        if chunk_txt:
-            chunks.append(Chunk(chunk_id=f"c{idx}", text=chunk_txt))
+
+    for para in paragraphs:
+        para = para.strip()
+        if not para:
+            continue
+
+        if len(para) >= min_chunk_size:
+            if current_chunk:
+                chunks.append(Chunk(chunk_id=f"c{idx}", text=current_chunk))
+                idx += 1
+                current_chunk = ""
+            chunks.append(Chunk(chunk_id=f"c{idx}", text=para))
             idx += 1
-        if end == len(text):
-            break
-        start = max(0, end - overlap)
+        else:
+            if current_chunk:
+                current_chunk += "\n" + para
+            else:
+                current_chunk = para
+
+            if len(current_chunk) >= min_chunk_size:
+                chunks.append(Chunk(chunk_id=f"c{idx}", text=current_chunk))
+                idx += 1
+                current_chunk = ""
+
+    if current_chunk:
+        chunks.append(Chunk(chunk_id=f"c{idx}", text=current_chunk))
 
     return chunks

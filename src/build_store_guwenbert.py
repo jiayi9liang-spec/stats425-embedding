@@ -22,7 +22,7 @@ def main():
     out_dir.mkdir(parents=True, exist_ok=True)
 
     text = Path(args.corpus_path).read_text(encoding="utf-8")
-    chunks = simple_char_chunk(text, chunk_size=args.chunk_size, overlap=args.overlap)
+    chunks = simple_char_chunk(text, min_chunk_size=50)
     if not chunks:
         raise ValueError("No chunks produced. Is corpus empty?")
 
